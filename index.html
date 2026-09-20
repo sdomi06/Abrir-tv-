@@ -1,12 +1,301 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abrir TV</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Abrir TV</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:linear-gradient(145deg,#07111f,#14233a);
+ color:white;
+ font-family:Arial,sans-serif;
+ min-height:100vh;
+}
+
+.app{
+ max-width:1000px;
+ margin:auto;
+ padding:32px;
+}
+
+.top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.logo{
+ font-size:32px;
+ font-weight:800;
+}
+
+.logo span{color:#4aa3ff}
+
+.clock{color:#9caec5}
+
+.hero{
+ text-align:center;
+ margin:70px 0 40px;
+}
+
+.hero h1{
+ font-size:46px;
+ margin:0 0 10px;
+}
+
+.hero p{color:#9caec5}
+
+.grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:22px;
+ max-width:800px;
+ margin:auto;
+}
+
+.card{
+ background:#13243b;
+ border:1px solid #29415e;
+ border-radius:22px;
+ min-height:160px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ font-size:22px;
+ font-weight:bold;
+ cursor:pointer;
+ gap:12px;
+}
+
+.card:hover,.card:focus{
+ outline:3px solid #4aa3ff;
+ background:#193252;
+}
+
+.icon{font-size:42px}
+
+.panel{
+ display:none;
+ max-width:800px;
+ margin:55px auto;
+ background:#101f34;
+ padding:28px;
+ border-radius:20px;
+ border:1px solid #29415e;
+}
+
+.panel.show{display:block}
+
+button,input{font-size:17px}
+
+.back,.primary{
+ padding:13px 18px;
+ border:0;
+ border-radius:11px;
+ cursor:pointer;
+}
+
+.primary{
+ background:#268cf0;
+ color:white;
+ font-weight:bold;
+ width:100%;
+ margin-top:10px;
+}
+
+.field{
+ width:100%;
+ padding:14px;
+ border-radius:10px;
+ border:1px solid #405672;
+ background:#091522;
+ color:white;
+ margin:8px 0 16px;
+}
+
+.footer{
+ text-align:center;
+ color:#61758e;
+ margin-top:55px;
+}
+
+@media(max-width:650px){
+ .app{padding:20px}
+ .grid{grid-template-columns:1fr}
+ .hero{margin:45px 0 30px}
+ .hero h1{font-size:35px}
+ .card{min-height:120px}
+}
+</style>
 </head>
+
 <body>
-  <h1>Abrir TV</h1>
-  <p>Aplicación instalada correctamente.</p>
+
+<div class="app">
+
+<div class="top">
+ <div class="logo">Abrir <span>TV</span></div>
+ <div id="clock" class="clock"></div>
+</div>
+
+<div id="home">
+
+<div class="hero">
+ <h1>¿Qué quieres ver?</h1>
+ <p>Selecciona una categoría</p>
+</div>
+
+<div class="grid">
+
+ <div class="card" onclick="openSection('TV en directo')" tabindex="0">
+  <div class="icon">📺</div>
+  TV en directo
+ </div>
+
+ <div class="card" onclick="openSection('Películas')" tabindex="0">
+  <div class="icon">🎬</div>
+  Películas
+ </div>
+
+ <div class="card" onclick="openSection('Series')" tabindex="0">
+  <div class="icon">▶️</div>
+  Series
+ </div>
+
+ <div class="card" onclick="settings()" tabindex="0">
+  <div class="icon">⚙️</div>
+  Ajustes
+ </div>
+
+</div>
+</div>
+
+<div id="panel" class="panel"></div>
+
+<div class="footer">
+ Abrir TV
+</div>
+
+</div>
+
+<script>
+
+function updateClock(){
+ document.getElementById("clock").textContent =
+ new Date().toLocaleTimeString("es-ES",{
+  hour:"2-digit",
+  minute:"2-digit"
+ });
+}
+
+updateClock();
+setInterval(updateClock,30000);
+
+function show(html){
+ document.getElementById("home").style.display="none";
+ const panel=document.getElementById("panel");
+ panel.className="panel show";
+ panel.innerHTML=html;
+}
+
+function openSection(name){
+
+ show(`
+  <button class="back" onclick="back()">← Volver</button>
+
+  <h2>${name}</h2>
+
+  <p style="color:#9caec5">
+   Todavía no hay contenido cargado.
+   Añade tu lista o servicio autorizado desde Ajustes.
+  </p>
+
+  <button class="primary" onclick="settings()">
+   Ir a Ajustes
+  </button>
+ `);
+}
+
+function settings(){
+
+ show(`
+  <button class="back" onclick="back()">← Volver</button>
+
+  <h2>⚙️ Ajustes</h2>
+
+  <label>Lista M3U</label>
+  <input
+   id="m3u"
+   class="field"
+   placeholder="https://.../lista.m3u">
+
+  <label>Usuario</label>
+  <input
+   id="username"
+   class="field"
+   placeholder="Usuario">
+
+  <label>Contraseña</label>
+  <input
+   id="password"
+   class="field"
+   type="password"
+   placeholder="Contraseña">
+
+  <button class="primary" onclick="saveSettings()">
+   Guardar configuración
+  </button>
+
+  <p id="message" style="color:#9caec5">
+   Utiliza únicamente listas y servicios para los que tengas autorización.
+  </p>
+ `);
+
+ const saved=localStorage.getItem("abrirtv_m3u");
+
+ if(saved){
+  document.getElementById("m3u").value=saved;
+ }
+}
+
+function saveSettings(){
+
+ const value=document.getElementById("m3u").value.trim();
+
+ if(value){
+
+  localStorage.setItem("abrirtv_m3u",value);
+
+  document.getElementById("message").textContent=
+  "✓ Configuración guardada en este dispositivo.";
+
+ }else{
+
+  document.getElementById("message").textContent=
+  "Introduce primero una dirección M3U.";
+ }
+}
+
+function back(){
+
+ document.getElementById("panel").className="panel";
+ document.getElementById("home").style.display="block";
+}
+
+document.addEventListener("keydown",function(e){
+
+ if(e.key==="Escape"){
+  back();
+ }
+
+});
+
+</script>
+
 </body>
 </html>
